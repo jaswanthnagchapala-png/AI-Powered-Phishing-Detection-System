@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-PHISHING DETECTION SYSTEM</title>
+    <style>
+        :root {
+            --bg: #070b16;
+            --card: #0f1629cc;
+            --line: #1f2a48;
+            --text: #e6ecff;
+            --muted: #8d9bc2;
+            --accent: #5b8cff;
+            --accent2: #8b5cf6;
+            --safe: #22c55e;
+            --danger: #ef4444;
+            --warn: #f59e0b;
+        }
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f3f6fd;
+                --card: #ffffffd9;
+                --line: #dbe3f5;
+                --text: #0f1a3a;
+                --muted: #5b6b92;
+            }
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(900px 500px at 15% -10%, #5b8cff33, transparent 60%),
+                radial-gradient(800px 500px at 100% 0%, #8b5cf633, transparent 55%),
+                var(--bg);
+            padding: 32px 16px 48px;
+        }
+        .wrap { max-width: 720px; margin: 0 auto; }
+        header { text-align: center; padding: 24px 0 8px; }
+        .logo {
+            width: 64px; height: 64px; margin: 0 auto 16px;
+            border-radius: 18px;
+            display: grid; place-items: center;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            box-shadow: 0 10px 30px #5b8cff55;
+        }
+        .logo svg { width: 34px; height: 34px; }
+        h1 { margin: 0; font-size: clamp(26px, 5vw, 38px); letter-spacing: -0.5px; }
+        h1 span {
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        .sub { color: var(--muted); margin: 10px auto 0; max-width: 520px; line-height: 1.6; }
+        .card {
+            margin-top: 28px; padding: 24px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 50px #00000026;
+        }
+        .field { display: flex; gap: 10px; flex-wrap: wrap; }
+        input[type=text] {
+            flex: 1 1 280px; min-width: 0;
+            padding: 15px 16px; font-size: 16px;
+            color: var(--text); background: transparent;
+            border: 1px solid var(--line); border-radius: 12px; outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        input[type=text]:focus { border-color: var(--accent); box-shadow: 0 0 0 4px #5b8cff2e; }
+        button.go {
+            flex: 0 0 auto; padding: 15px 26px; font-size: 16px; font-weight: 600;
+            color: #fff; border: 0; border-radius: 12px; cursor: pointer;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            transition: transform .15s, opacity .2s;
+            box-shadow: 0 8px 22px #5b8cff44;
+        }
+        button.go:hover { transform: translateY(-1px); }
+        button.go:disabled { opacity: .7; cursor: wait; }
+        .tries { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .tries small { color: var(--muted); }
+        .chip {
+            font-size: 12.5px; padding: 6px 11px; border-radius: 999px; cursor: pointer;
+            color: var(--muted); background: transparent;
+            border: 1px dashed var(--line); transition: all .15s;
+        }
+        .chip:hover { color: var(--text); border-color: var(--accent); }
+        .verdict {
+            margin-top: 22px; padding: 22px; border-radius: 16px;
+            border: 1px solid var(--tint);
+            background: color-mix(in srgb, var(--tint) 10%, transparent);
+            animation: rise .4s ease;
+        }
+        .verdict.safe { --tint: var(--safe); }
+        .verdict.bad { --tint: var(--danger); }
+        .vhead { display: flex; align-items: center; gap: 14px; }
+        .badge {
+            width: 46px; height: 46px; border-radius: 14px; flex: 0 0 auto;
+            display: grid; place-items: center; color: #fff; background: var(--tint);
+            font-size: 24px; font-weight: 700;
+        }
+        .vtitle { font-size: 22px; font-weight: 700; color: var(--tint); }
+        .vurl { color: var(--muted); font-size: 13.5px; overflow-wrap: anywhere; margin-top: 2px; }
+        .meter { margin-top: 20px; }
+        .mlabel { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+        .mlabel b { color: var(--text); }
+        .track { height: 10px; border-radius: 999px; background: var(--line); overflow: hidden; }
+        .fill {
+            height: 100%; width: 0; border-radius: 999px;
+            background: linear-gradient(90deg, var(--safe), var(--warn), var(--danger));
+            background-size: 720px 100%;
+            animation: grow .9s .1s ease forwards;
+        }
+        h3 { margin: 22px 0 10px; font-size: 14px; letter-spacing: .6px; text-transform: uppercase; color: var(--muted); }
+        ul.why { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+        ul.why li {
+            display: flex; gap: 10px; align-items: flex-start; font-size: 14.5px; line-height: 1.45;
+            padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
+        }
+        .dot { flex: 0 0 auto; width: 8px; height: 8px; margin-top: 7px; border-radius: 50%; }
+        .warn .dot { background: var(--warn); }
+        .ok .dot { background: var(--safe); }
+        .error {
+            margin-top: 18px; padding: 14px 16px; border-radius: 12px;
+            color: var(--danger); border: 1px solid var(--danger);
+            background: color-mix(in srgb, var(--danger) 10%, transparent);
+        }
+        .disclaimer { margin-top: 18px; color: var(--muted); font-size: 12.5px; line-height: 1.55; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 22px; }
+        .stat { text-align: center; padding: 14px 8px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+        .stat b { display: block; font-size: 19px; }
+        .stat span { font-size: 12px; color: var(--muted); }
+        footer { text-align: center; margin-top: 26px; color: var(--muted); font-size: 12.5px; }
+        @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+        @keyframes grow { to { width: var(--w); } }
+        @media (max-width: 520px) { .stats { grid-template-columns: 1fr; } button.go { width: 100%; } }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <header>
+        <div class="logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3l8 3v6c0 4.5-3.2 8.3-8 9-4.8-.7-8-4.5-8-9V6l8-3z"/>
+                <path d="M9 12l2 2 4-4"/>
+            </svg>
+        </div>
+        <h1>AI-PHISHING<span> DETECTION</span> SYSTEM</h1>
+        <p class="sub">Paste any link and a machine-learning model checks whether its domain looks like phishing, before you click.</p>
+    </header>
+
+    <div class="card">
+        <form method="POST" id="form" autocomplete="off">
+            <div class="field">
+                <input type="text" id="url" name="url" placeholder="https://example.com"
+                       value="{{ submitted_url }}" maxlength="2048" required>
+                <button class="go" id="btn" type="submit">Analyze URL</button>
+            </div>
+        </form>
+
+        <div class="tries">
+            <small>Try:</small>
+            <button type="button" class="chip" data-url="https://www.google.com">google.com</button>
+            <button type="button" class="chip" data-url="https://www.sbi.co.in">sbi.co.in</button>
+            <button type="button" class="chip" data-url="http://paypal-secure-login.verify-account.xyz/update">paypal-secure-login...xyz</button>
+            <button type="button" class="chip" data-url="http://192.168.1.10/login">192.168.1.10/login</button>
+        </div>
+
+        {% if result %}
+        <div class="verdict {{ 'bad' if result == 'Phishing' else 'safe' }}">
+            <div class="vhead">
+                <div class="badge">{{ '!' if result == 'Phishing' else '✓' }}</div>
+                <div>
+                    <div class="vtitle">{{ 'Likely Phishing' if result == 'Phishing' else 'Legitimate' }}</div>
+                    <div class="vurl">{{ submitted_url }}</div>
+                </div>
+            </div>
+
+            {% if risk is defined and risk is not none %}
+            <div class="meter">
+                <div class="mlabel"><span>Phishing risk score</span><b>{{ risk }}%</b></div>
+                <div class="track"><div class="fill" style="--w: {{ risk }}%"></div></div>
+            </div>
+            {% endif %}
+
+            {% if indicators %}
+            <h3>Why</h3>
+            <ul class="why">
+                {% for level, text in indicators %}
+                <li class="{{ level }}"><span class="dot"></span><span>{{ text }}</span></li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <p class="disclaimer">
+                This is a prediction from a model trained on domain patterns, not proof that a site is safe or malicious.
+                Real sites with unusual subdomains can be flagged, and some phishing domains can slip through.
+            </p>
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+    </div>
+
+    <div class="stats">
+        <div class="stat"><b>235K</b><span>URLs trained on</span></div>
+        <div class="stat"><b>9</b><span>domain features</span></div>
+        <div class="stat"><b>Random Forest</b><span>best model</span></div>
+    </div>
+
+    <footer>For educational use. Avoid pasting links that contain private tokens.</footer>
+</div>
+
+<script>
+    const input = document.getElementById("url");
+    document.querySelectorAll(".chip").forEach(function (chip) {
+        chip.addEventListener("click", function () {
+            input.value = chip.dataset.url;
+            input.focus();
+        });
+    });
+    document.getElementById("form").addEventListener("submit", function () {
+        const btn = document.getElementById("btn");
+        btn.disabled = true;
+        btn.textContent = "Analyzing...";
+    });
+</script>
+</body>
+</html>

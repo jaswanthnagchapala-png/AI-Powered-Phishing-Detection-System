@@ -1,0 +1,12 @@
+@"
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+data/raw/
+data/processed/
+.env
+.vscode/
+.DS_Store
+Thumbs.db
+"@ | Set-Content .gitignore
